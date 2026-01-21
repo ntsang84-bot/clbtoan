@@ -21,6 +21,7 @@ export interface Player {
   score: number; 
   time: string; 
   startTime?: number; 
+  isReplay?: boolean;
 }
 
 export type GameState = 'START' | 'PLAYING' | 'RESULT' | 'LEADERBOARD';

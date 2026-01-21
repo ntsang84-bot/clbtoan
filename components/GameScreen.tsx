@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Player, MathQuestion } from '../types';
-import { MILESTONES } from '../constants';
+import { MILESTONES, AUDIO_URLS } from '../constants';
 import { generateQuestion } from '../services/mathEngine';
 import MathRenderer from './MathRenderer';
 import { Trophy, Timer, Info, Loader2, BookOpen, UserCheck, RefreshCw, XCircle } from 'lucide-react';
 
 interface GameScreenProps {
   player: Player;
-  topic: string; // Correctly define passed prop
-  timeLimit: number; // Correctly define passed prop
+  topic: string;
+  timeLimit: number;
   onGameOver: (finalScore: number) => void;
 }
 
@@ -21,7 +21,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [loading, setLoading] = useState(true);
   
-  // Lifelines state
   const [lifelines, setLifelines] = useState({
     fiftyFifty: true,
     changeQuestion: true,
@@ -31,37 +30,43 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
 
   const usedQuestionsRef = useRef<Set<string>>(new Set());
 
+  const playAudio = (url: string, volume: number = 0.4) => {
+    const audio = new Audio(url);
+    audio.volume = volume;
+    audio.play().catch(() => {});
+  };
+
   const getNewQuestion = useCallback((level: number, isChange: boolean = false) => {
     setLoading(true);
     setHiddenOptions([]);
-    // Reset thời gian ngay lập tức để tránh bị đứng ở số cũ của câu trước
+    
     if (!isChange) {
       setTimeLeft(level <= 5 ? 60 : level <= 10 ? 120 : 180);
     }
     
+    // Giả lập hiệu ứng nạp câu hỏi
     setTimeout(() => {
       try {
-        const q = generateQuestion(player.grade, level, usedQuestionsRef.current);
+        const q = generateQuestion(player.grade, level, usedQuestionsRef.current, player.isReplay);
         setQuestion(q);
       } catch (err) {
-        console.error(err);
+        console.error("Lỗi nạp câu hỏi:", err);
       } finally {
         setLoading(false);
         setSelectedOption(null);
         setIsAnswered(false);
+        // Âm thanh chuyển cảnh kịch tính
+        playAudio(AUDIO_URLS.whoosh, 0.5);
       }
-    }, 600); // Giảm nhẹ thời gian chờ để mượt mà hơn
-  }, [player.grade]);
+    }, 1000);
+  }, [player.grade, player.isReplay]);
 
-  // Sửa lỗi: Bổ sung currentLevel vào dependency để tự động gọi khi tăng level
   useEffect(() => {
     getNewQuestion(currentLevel);
   }, [currentLevel, getNewQuestion]);
 
   useEffect(() => {
-    // Fix: Using 'any' type for interval variable to avoid 'NodeJS.Timeout' namespace errors in browser environments
     let interval: any;
-    
     if (question && !isAnswered && !loading && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft(prev => prev - 1);
@@ -69,38 +74,53 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
     } else if (timeLeft === 0 && !isAnswered && !loading && question) {
       handleAnswer('TIMEOUT');
     }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [timeLeft, isAnswered, question, loading]);
 
   const handleAnswer = (opt: string) => {
     if (isAnswered || loading) return;
+    
+    // Âm thanh click khi chọn đáp án
+    playAudio(AUDIO_URLS.click, 0.4);
+    
     setSelectedOption(opt);
     setIsAnswered(true);
 
     const isCorrect = opt === question?.correctAnswer;
     
+    // Khoảng lặng kịch tính trước khi công bố
+    setTimeout(() => {
+      if (isCorrect) {
+        const milestone = MILESTONES.find(m => m.level === currentLevel);
+        if (milestone?.isSafe) {
+          playAudio(AUDIO_URLS.celebration, 0.6);
+        } else {
+          playAudio(AUDIO_URLS.correct, 0.5);
+        }
+      } else {
+        if (opt !== 'TIMEOUT') playAudio(AUDIO_URLS.wrong, 0.5);
+      }
+    }, 1200);
+
+    // Chuyển câu tiếp theo hoặc kết thúc
     setTimeout(() => {
       if (isCorrect) {
         if (currentLevel === 15) {
           onGameOver(150);
         } else {
-          // Chỉ cần tăng Level, useEffect phía trên sẽ tự kích hoạt getNewQuestion
           setCurrentLevel(prev => prev + 1);
         }
       } else {
         const finalPoints = MILESTONES.find(m => m.level === currentLevel - 1)?.points || 0;
         onGameOver(finalPoints);
       }
-    }, 2000);
+    }, 3500);
   };
 
-  // Lifeline Logic
   const useFiftyFifty = () => {
     if (!lifelines.fiftyFifty || !question) return;
-    const options = ['A', 'B', 'C', 'D'] as const;
+    playAudio(AUDIO_URLS.click);
+    const options: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
     const wrongOptions = options.filter(opt => opt !== question.correctAnswer);
     const toHide = wrongOptions.sort(() => 0.5 - Math.random()).slice(0, 2);
     setHiddenOptions(prev => [...prev, ...toHide]);
@@ -109,13 +129,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
 
   const useChangeQuestion = () => {
     if (!lifelines.changeQuestion) return;
+    playAudio(AUDIO_URLS.click);
     setLifelines(prev => ({ ...prev, changeQuestion: false }));
     getNewQuestion(currentLevel, true);
   };
 
   const useRemoveOne = () => {
     if (!lifelines.removeOne || !question) return;
-    const options = ['A', 'B', 'C', 'D'] as const;
+    playAudio(AUDIO_URLS.click);
+    const options: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
     const availableWrong = options.filter(opt => opt !== question.correctAnswer && !hiddenOptions.includes(opt));
     if (availableWrong.length > 0) {
         const toHide = availableWrong[Math.floor(Math.random() * availableWrong.length)];
@@ -126,7 +148,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen p-4 md:p-8 millionaire-bg">
-      {/* Sidebar Milestone */}
       <div className="hidden lg:flex w-64 flex-col gap-2 pr-6 sticky top-20 h-[80vh]">
         <div className="bg-white p-4 rounded-2xl border border-slate-200 mb-2 shadow-sm">
            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest text-center">Bậc thang điểm 2026</p>
@@ -151,7 +172,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
       </div>
 
       <div className="flex-1 flex flex-col items-center w-full max-w-5xl mx-auto">
-        {/* Header & Lifelines */}
         <div className="w-full flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm gap-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
@@ -206,7 +226,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
           </div>
         ) : (
           <div className="w-full space-y-8 animate-in fade-in zoom-in duration-500">
-            {/* INFOGRAPHIC QUESTION CARD - NỀN TRẮNG CHỮ ĐEN CỰC RÕ */}
             <div className="bg-white p-12 md:p-16 rounded-[3.5rem] shadow-2xl border-[10px] border-blue-50 flex flex-col items-center justify-center text-center min-h-[350px] relative overflow-hidden">
                <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500"></div>
                <div className="relative z-10 w-full">
@@ -220,7 +239,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
                </div>
             </div>
 
-            {/* Answers Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-2">
               {question && Object.entries(question.options).map(([key, value]) => {
                 const isHidden = hiddenOptions.includes(key);

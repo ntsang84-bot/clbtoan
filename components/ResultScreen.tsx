@@ -5,10 +5,11 @@ import { Trophy, RefreshCcw, Home, Loader2, Clock, FileText, Image as ImageIcon,
 import { generateFinalReport } from '../services/geminiService';
 import { savePlayerResult } from '../services/sheetsService';
 import { toPng } from 'html-to-image';
+import { AUDIO_URLS } from '../constants';
 
 interface ResultScreenProps {
   player: Player;
-  onReset: () => void;
+  onReset: (isReplay?: boolean) => void;
 }
 
 const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
@@ -39,6 +40,10 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
 
   const handleDownloadPDF = () => {
     window.print();
+  };
+
+  const playClick = () => {
+    new Audio(AUDIO_URLS.click).play().catch(() => {});
   };
 
   const handleDownloadImage = async () => {
@@ -209,13 +214,13 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
             
             <div className="flex gap-4">
                <button
-                onClick={onReset}
+                onClick={() => { playClick(); onReset(true); }}
                 className="flex-1 flex items-center justify-center gap-3 py-5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-2xl transition-all uppercase text-xs tracking-widest"
               >
                 <RefreshCcw size={18} /> Chơi lại
               </button>
               <button
-                onClick={() => window.location.reload()}
+                onClick={() => { playClick(); window.location.reload(); }}
                 className="flex-1 flex items-center justify-center gap-3 py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all uppercase text-xs tracking-widest shadow-lg"
               >
                 <Home size={18} /> Về trang chủ

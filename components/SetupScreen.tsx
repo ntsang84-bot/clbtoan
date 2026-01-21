@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Grade, Player } from '../types';
 import { Trophy, User, ArrowRight, Star, ShieldCheck, BookOpen } from 'lucide-react';
+import { AUDIO_URLS } from '../constants';
 
 interface SetupScreenProps {
   onStart: (player: Player, topic: string, timeLimit: number) => void;
@@ -13,12 +14,17 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
   const [grade, setGrade] = useState<Grade>(11);
   const [classRoom, setClassRoom] = useState('');
 
+  const playClick = () => {
+    new Audio(AUDIO_URLS.click).play().catch(() => {});
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !classRoom.trim()) {
       alert("Vui lòng nhập đầy đủ thông tin!");
       return;
     }
+    playClick();
     onStart({ 
       name: name.trim(), 
       grade, 
@@ -93,7 +99,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
             </button>
             <button 
               type="button"
-              onClick={onViewLeaderboard}
+              onClick={() => { playClick(); onViewLeaderboard(); }}
               className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]"
             >
               <Star size={14} className="text-yellow-500 fill-yellow-500" /> Bảng vinh danh
