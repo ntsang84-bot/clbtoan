@@ -5,7 +5,6 @@ const LOCAL_STORAGE_KEY = 'MATH_MILLIONAIRE_LEADERBOARD_LOCAL';
 
 /**
  * Lưu kết quả người chơi vào LocalStorage thay vì Google Sheets.
- * Giữ nguyên cấu trúc dữ liệu để không làm hỏng tính năng bảng xếp hạng.
  */
 export async function savePlayerResult(data: { name: string, lop: string, diem: number, thoi_gian: string }): Promise<boolean> {
   try {
@@ -16,11 +15,10 @@ export async function savePlayerResult(data: { name: string, lop: string, diem: 
       timestamp: new Date().toLocaleString('vi-VN') 
     }];
     
-    // Sắp xếp theo điểm giảm dần và thời gian nhanh hơn (nếu bằng điểm)
     const sortedData = newData.sort((a, b) => {
       if (b.diem !== a.diem) return b.diem - a.diem;
       return a.thoi_gian.localeCompare(b.thoi_gian);
-    }).slice(0, 50); // Lưu tối đa 50 người cao nhất
+    }).slice(0, 100); // Lưu tối đa 100 kết quả
     
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sortedData));
     return true;
@@ -42,4 +40,16 @@ export async function getLeaderboard(): Promise<any[]> {
     console.error("Lỗi đọc dữ liệu bảng xếp hạng:", error);
     return [];
   }
+}
+
+/**
+ * Kiểm tra số lần đã tham gia của một học sinh cụ thể.
+ */
+export async function getPlayerAttemptCount(name: string, lop: string): Promise<number> {
+  const leaderboard = await getLeaderboard();
+  const playerAttempts = leaderboard.filter(entry => 
+    entry.name.toLowerCase().trim() === name.toLowerCase().trim() && 
+    entry.lop.toUpperCase().trim() === lop.toUpperCase().trim()
+  );
+  return playerAttempts.length;
 }

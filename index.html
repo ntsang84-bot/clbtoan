@@ -3,13 +3,15 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Đấu Trường Toán Học 2026 - AI Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <style>
-        body {
+        html, body {
+            height: auto;
+            min-height: 100%;
             font-family: 'Montserrat', sans-serif;
             background-color: #f8fafc;
             color: #1e293b;
@@ -18,14 +20,31 @@
             overflow-x: hidden;
             overflow-y: auto !important;
             -webkit-font-smoothing: antialiased;
+            scroll-behavior: smooth;
+        }
+        #root {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .millionaire-bg {
             background: linear-gradient(135deg, #f0f9ff 0%, #e2e8f0 100%);
-            min-height: 100vh;
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
         }
         .ans-btn {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            clip-path: polygon(3% 0%, 97% 0%, 100% 50%, 97% 100%, 3% 100%, 0% 50%);
+            clip-path: polygon(2% 0%, 98% 0%, 100% 50%, 98% 100%, 2% 100%, 0% 50%);
+            min-height: 60px;
+        }
+        @media (max-width: 640px) {
+            .ans-btn {
+                clip-path: none; /* Bỏ clip-path trên mobile để dễ đọc và click hơn */
+                border-radius: 1rem;
+                padding: 1rem !important;
+            }
         }
         .lifeline-btn {
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -40,18 +59,16 @@
             opacity: 0.2;
             cursor: not-allowed;
         }
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* Custom scrollbar cho các danh sách dài */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(37, 99, 235, 0.2);
             border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
         }
     </style>
 <script type="importmap">

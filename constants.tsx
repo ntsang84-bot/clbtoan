@@ -58,7 +58,7 @@ export const QUESTION_POOL: Record<Grade, Record<string, MathQuestion[]>> = {
     "Thông hiểu": [
       { question: "Tìm giá trị lớn nhất $M$ của hàm số $y = 3\\sin(x - \\frac{\\pi}{6}) + 1$:", options: { A: "$M = 3$", B: "$M = 4$", C: "$M = 2$", D: "$M = 1$" }, correctAnswer: "B", explanation: "Vì $-1 \\leq \\sin \\leq 1$ nên $M = 3(1) + 1 = 4$.", level: "Thông hiểu" },
       { question: "Tính giới hạn $L = \\lim \\frac{2n^2 + 1}{n^2 - 3}$:", options: { A: "$L = 2$", B: "$L = 1/2$", C: "$L = -1/3$", D: "$L = 0$" }, correctAnswer: "A", explanation: "Chia cả tử và mẫu cho $n^2$, giới hạn bằng 2.", level: "Thông hiểu" },
-      { question: "Cho cấp số cộng có $u_1 = -2, d = 3$. Tổng 10 số hạng đầu $S_{10}$ là:", options: { A: "115", B: "135", C: "155", D: "175" }, correctAnswer: "C", explanation: "$S_{10} = \\frac{10}{2}[2(-2) + 9 \\cdot 3] = 5 \\cdot 23 = 115$ (Tính lại: $5 \\cdot (-4+27) = 5 \\cdot 23 = 115$. À, câu cũ ghi 155 là nhầm, sửa lại 115).", level: "Thông hiểu" }
+      { question: "Cho cấp số cộng có $u_1 = -2, d = 3$. Tổng 10 số hạng đầu $S_{10}$ là:", options: { A: "115", B: "135", C: "155", D: "175" }, correctAnswer: "A", explanation: "$S_{10} = \\frac{10}{2}[2(-2) + 9 \\cdot 3] = 5 \\cdot 23 = 115$.", level: "Thông hiểu" }
     ],
     "Vận dụng": [
       { question: "Số nghiệm của phương trình $\\tan(x + \\frac{\\pi}{3}) = 1$ trên khoảng $(0; \\pi)$ là:", options: { A: "0", B: "1", C: "2", D: "3" }, correctAnswer: "B", explanation: "$x + \\pi/3 = \\pi/4 + k\\pi \\Leftrightarrow x = -\\pi/12 + k\\pi$. Nghiệm duy nhất là $11\\pi/12$.", level: "Vận dụng" },
@@ -73,8 +73,7 @@ export const QUESTION_POOL: Record<Grade, Record<string, MathQuestion[]>> = {
     "Nhận biết": [
       { question: "Đạo hàm của hàm số $y = e^{2x}$ là:", options: { A: "$y' = e^{2x}$", B: "$y' = 2e^{2x}$", C: "$y' = \\frac{1}{2}e^{2x}$", D: "$y' = 2x e^{2x-1}$" }, correctAnswer: "B", explanation: "$(e^u)' = u' e^u$.", level: "Nhận biết" },
       { question: "Họ nguyên hàm của hàm số $f(x) = \\cos x$ là:", options: { A: "$\\sin x + C$", B: "$-\\sin x + C$", C: "$\\cos x + C$", D: "$\\tan x + C$" }, correctAnswer: "A", explanation: "Nguyên hàm của cos là sin.", level: "Nhận biết" },
-      { question: "Trong không gian $Oxyz$, tọa độ hình chiếu của $M(1;2;3)$ lên mặt phẳng $(Oxy)$ là:", options: { A: "$(1;2;0)$", B: "$(1;0;3)$", C: "$(0;2;3)$", D: "$(0;0;3)$" }, correctAnswer: "A", explanation: "Chiếu lên Oxy thì z = 0.", level: "Nhận biết" },
-      { question: "Số phức $z = 3 - 4i$ có phần ảo là:", options: { A: "4", B: "$-4$", C: "$-4i$", D: "3" }, correctAnswer: "B", explanation: "Phần ảo là hệ số của i.", level: "Nhận biết" }
+      { question: "Trong không gian $Oxyz$, tọa độ hình chiếu của $M(1;2;3)$ lên mặt phẳng $(Oxy)$ là:", options: { A: "$(1;2;0)$", B: "$(1;0;3)$", C: "$(0;2;3)$", D: "$(0;0;3)$" }, correctAnswer: "A", explanation: "Chiếu lên Oxy thì z = 0.", level: "Nhận biết" }
     ],
     "Thông hiểu": [
       { question: "Giá trị cực tiểu của hàm số $y = x^3 - 3x + 2$ là:", options: { A: "$y = 0$", B: "$y = 4$", C: "$x = 1$", D: "$x = -1$" }, correctAnswer: "A", explanation: "$y'=3x^2-3=0 \\Rightarrow x=\\pm 1$. Cực tiểu tại $x=1, y=0$.", level: "Thông hiểu" },

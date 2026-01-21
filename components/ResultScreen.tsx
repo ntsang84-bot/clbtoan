@@ -68,7 +68,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen millionaire-bg p-4 md:p-10 pt-20 pb-20 h-auto overflow-y-visible">
+    <div className="flex flex-col items-center justify-start min-h-screen millionaire-bg p-3 md:p-10 pt-16 md:pt-20 pb-20 h-auto overflow-y-visible">
       <style>{`
         @media print {
           body { background: white !important; padding: 0 !important; margin: 0 !important; }
@@ -86,23 +86,24 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
       `}</style>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center gap-8 py-40 h-screen">
-          <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
-          <h2 className="text-2xl font-black text-blue-700 uppercase tracking-widest animate-pulse italic text-center">
+        <div className="flex flex-col items-center justify-center gap-8 py-40 h-screen w-full">
+          <Loader2 className="w-12 h-12 md:w-16 md:h-16 text-blue-600 animate-spin" />
+          <h2 className="text-lg md:text-2xl font-black text-blue-700 uppercase tracking-widest animate-pulse italic text-center px-4">
             AI đang biên soạn chứng chỉ <br/> vinh danh niên khóa 2026...
           </h2>
         </div>
       ) : (
-        <div className="w-full flex flex-col items-center gap-10">
+        <div className="w-full flex flex-col items-center gap-6 md:gap-10">
           <div className="text-center no-print animate-in fade-in slide-in-from-top-10 duration-1000">
-            <div className="flex justify-center mb-4">
-               <CheckCircle size={60} className="text-emerald-500 fill-emerald-50" />
+            <div className="flex justify-center mb-2 md:mb-4">
+               <CheckCircle size={40} className="md:size-60 text-emerald-500 fill-emerald-50" />
             </div>
-            <h2 className="text-5xl font-black text-slate-800 uppercase tracking-tighter mb-2 italic">HOÀN THÀNH THỬ THÁCH!</h2>
-            <p className="text-blue-600 text-[11px] font-bold uppercase tracking-[0.5em] opacity-80 italic">Chúc mừng nhà toán học trẻ xuất sắc</p>
+            <h2 className="text-2xl md:text-5xl font-black text-slate-800 uppercase tracking-tighter mb-1 italic">HOÀN THÀNH THỬ THÁCH!</h2>
+            <p className="text-blue-600 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.3em] opacity-80 italic">Chúc mừng nhà toán học trẻ xuất sắc</p>
           </div>
 
-          <div className="w-full max-w-5xl no-print rounded-[4rem] border border-slate-200 bg-white/50 backdrop-blur-md p-4 md:p-12 shadow-[0_30px_100px_rgba(0,0,0,0.1)] mb-10 overflow-x-auto overflow-y-visible">
+          {/* Certificate Container - Có thể cuộn ngang trên Mobile */}
+          <div className="w-full max-w-5xl no-print rounded-3xl md:rounded-[4rem] border border-slate-200 bg-white/50 backdrop-blur-md p-2 md:p-12 shadow-xl mb-6 overflow-x-auto overflow-y-visible custom-scrollbar">
             <div 
               ref={certificateRef}
               id="certificate-print-area" 
@@ -194,36 +195,36 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-6 w-full max-w-2xl no-print pb-20 animate-in slide-in-from-bottom-10 duration-1000">
-            <div className="grid grid-cols-2 gap-6">
+          <div className="flex flex-col gap-4 w-full max-w-2xl no-print pb-20 animate-in slide-in-from-bottom-10 duration-1000 px-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={handleDownloadImage}
                 disabled={exporting}
-                className="flex items-center justify-center gap-4 py-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-3xl hover:scale-[1.02] active:scale-95 transition-all uppercase text-sm tracking-widest shadow-xl disabled:opacity-50"
+                className="flex items-center justify-center gap-3 py-4 md:py-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl md:rounded-3xl transition-all uppercase text-xs md:text-sm tracking-widest shadow-xl disabled:opacity-50"
               >
-                {exporting ? <Loader2 size={28} className="animate-spin" /> : <ImageIcon size={28} />}
+                {exporting ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
                 Lưu ảnh chứng chỉ
               </button>
               <button
                 onClick={handleDownloadPDF}
-                className="flex items-center justify-center gap-4 py-6 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-3xl hover:scale-[1.02] active:scale-95 transition-all uppercase text-sm tracking-widest shadow-xl"
+                className="flex items-center justify-center gap-3 py-4 md:py-6 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-2xl md:rounded-3xl transition-all uppercase text-xs md:text-sm tracking-widest shadow-xl"
               >
-                <FileText size={28} /> In chứng nhận
+                <FileText size={24} /> In chứng nhận
               </button>
             </div>
             
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
                <button
                 onClick={() => { playClick(); onReset(true); }}
-                className="flex-1 flex items-center justify-center gap-3 py-5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-2xl transition-all uppercase text-xs tracking-widest"
+                className="flex-1 flex items-center justify-center gap-3 py-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl transition-all uppercase text-[10px] tracking-widest"
               >
-                <RefreshCcw size={18} /> Chơi lại
+                <RefreshCcw size={16} /> Chơi lại
               </button>
               <button
                 onClick={() => { playClick(); window.location.reload(); }}
-                className="flex-1 flex items-center justify-center gap-3 py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all uppercase text-xs tracking-widest shadow-lg"
+                className="flex-1 flex items-center justify-center gap-3 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all uppercase text-[10px] tracking-widest shadow-lg"
               >
-                <Home size={18} /> Về trang chủ
+                <Home size={16} /> Về trang chủ
               </button>
             </div>
           </div>

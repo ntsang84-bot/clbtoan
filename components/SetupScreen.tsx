@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
 import { Grade, Player } from '../types';
-import { Trophy, User, ArrowRight, Star, ShieldCheck, BookOpen } from 'lucide-react';
+import { Trophy, User, ArrowRight, Star, ShieldCheck, AlertCircle } from 'lucide-react';
 import { AUDIO_URLS } from '../constants';
+import { getPlayerAttemptCount } from '../services/sheetsService';
 
 interface SetupScreenProps {
   onStart: (player: Player, topic: string, timeLimit: number) => void;
@@ -13,17 +14,28 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
   const [name, setName] = useState('');
   const [grade, setGrade] = useState<Grade>(11);
   const [classRoom, setClassRoom] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
 
   const playClick = () => {
     new Audio(AUDIO_URLS.click).play().catch(() => {});
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !classRoom.trim()) {
       alert("Vui lòng nhập đầy đủ thông tin!");
       return;
     }
+
+    setIsChecking(true);
+    const attempts = await getPlayerAttemptCount(name, classRoom);
+    
+    if (attempts >= 3) {
+      alert(`Thí sinh ${name} - Lớp ${classRoom} đã hết lượt tham gia (Tối đa 3 lần). Hẹn gặp lại bạn ở mùa giải sau!`);
+      setIsChecking(false);
+      return;
+    }
+
     playClick();
     onStart({ 
       name: name.trim(), 
@@ -58,7 +70,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-5 py-4 text-slate-800 focus:border-blue-500 focus:bg-white outline-none font-bold transition-all"
+                  disabled={isChecking}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-5 py-4 text-slate-800 focus:border-blue-500 focus:bg-white outline-none font-bold transition-all disabled:opacity-50"
                   placeholder="Nhập tên của bạn..."
                   value={name}
                   onChange={e => setName(e.target.value)}
@@ -70,7 +83,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
               <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-2">Khối & Lớp</label>
               <div className="flex gap-2">
                 <select 
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 outline-none font-bold appearance-none cursor-pointer focus:border-blue-500 focus:bg-white"
+                  disabled={isChecking}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 outline-none font-bold appearance-none cursor-pointer focus:border-blue-500 focus:bg-white disabled:opacity-50"
                   value={grade}
                   onChange={e => setGrade(parseInt(e.target.value) as Grade)}
                 >
@@ -80,7 +94,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
                 </select>
                 <input 
                   required
-                  className="w-24 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 focus:border-blue-500 focus:bg-white outline-none font-bold text-center uppercase"
+                  disabled={isChecking}
+                  className="w-24 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 focus:border-blue-500 focus:bg-white outline-none font-bold text-center uppercase disabled:opacity-50"
                   placeholder="Lớp"
                   value={classRoom}
                   onChange={e => setClassRoom(e.target.value)}
@@ -89,13 +104,21 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
             </div>
           </div>
 
+          <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex items-start gap-3">
+             <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={16} />
+             <p className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-tight">
+               Lưu ý: Mỗi thí sinh chỉ được tham gia tối đa 3 lần. Kết quả tốt nhất sẽ được lưu lại.
+             </p>
+          </div>
+
           <div className="pt-4 flex flex-col gap-4">
             <button 
               type="submit"
-              className="w-full py-6 bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] active:scale-95 text-white font-black text-xl rounded-3xl transition-all shadow-xl shadow-blue-200 flex items-center justify-center gap-4 uppercase tracking-tighter"
+              disabled={isChecking}
+              className="w-full py-6 bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] active:scale-95 text-white font-black text-xl rounded-3xl transition-all shadow-xl shadow-blue-200 flex items-center justify-center gap-4 uppercase tracking-tighter disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Bắt đầu hành trình
-              <ArrowRight size={24} />
+              {isChecking ? "Đang xác thực..." : "Bắt đầu hành trình"}
+              {!isChecking && <ArrowRight size={24} />}
             </button>
             <button 
               type="button"
