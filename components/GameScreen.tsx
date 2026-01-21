@@ -179,7 +179,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
             </div>
             <div>
               <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-0.5">Khối {player.grade} - Câu {currentLevel}</p>
-              <h2 className="text-xl font-extrabold text-slate-800 uppercase italic leading-none">Chinh phục triệu phú</h2>
+              <h2 className="text-xl font-extrabold text-slate-800 uppercase italic leading-none">Chinh phục đỉnh cao</h2>
             </div>
           </div>
 

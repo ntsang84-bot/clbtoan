@@ -143,7 +143,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
 
                 <p className="font-serif text-2xl text-slate-700 max-w-2xl leading-relaxed mb-12">
                   Đã chứng minh bản lĩnh, tư duy sắc bén và kiến thức vững vàng <br/>
-                  trong thử thách trí tuệ <span className="font-bold text-[#b71c1c] text-3xl uppercase tracking-tighter">"AI LÀ TRIỆU PHÚ TOÁN HỌC"</span>
+                  trong thử thách trí tuệ <span className="font-bold text-[#b71c1c] text-3xl uppercase tracking-tighter">"ĐẤU TRƯỜNG TOÁN HỌC 2026"</span>
                 </p>
 
                 <div className="grid grid-cols-2 gap-10 w-full max-w-3xl mb-14">

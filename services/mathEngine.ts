@@ -2,7 +2,7 @@
 import { MathQuestion, Grade } from "../types";
 import { QUESTION_POOL } from "../constants";
 
-const HISTORY_KEY = 'MATH_QUESTION_HISTORY';
+const HISTORY_KEY = 'MATH_QUESTION_GLOBAL_HISTORY';
 
 /**
  * Lấy lịch sử các câu hỏi đã làm từ localStorage để tránh trùng lặp giữa các phiên chơi.
@@ -19,8 +19,8 @@ function updateGlobalHistory(question: string) {
   const historySet = getGlobalHistory();
   historySet.add(question);
   const historyArray = Array.from(historySet);
-  // Giới hạn lịch sử 200 câu gần nhất để không làm đầy bộ nhớ
-  if (historyArray.length > 200) historyArray.shift();
+  // Giới hạn lịch sử 300 câu gần nhất
+  if (historyArray.length > 300) historyArray.shift();
   localStorage.setItem(HISTORY_KEY, JSON.stringify(historyArray));
 }
 
@@ -37,53 +37,49 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 /**
- * Tạo câu hỏi đảm bảo ngẫu nhiên hoàn toàn và không trùng lặp.
- * isReplay: Nếu là lượt chơi lại, ưu tiên lấy câu hỏi từ cuối danh sách (nửa cuối chương).
+ * Tạo câu hỏi đảm bảo ngẫu nhiên và tăng độ khó nếu là lượt chơi lại.
  */
 export function generateQuestion(grade: Grade, level: number, sessionUsed: Set<string>, isReplay: boolean = false): MathQuestion {
-  let difficulty: keyof typeof QUESTION_POOL[Grade] = "Nhận biết";
-  if (level > 5) difficulty = "Thông hiểu";
-  if (level > 10) difficulty = "Vận dụng";
-  if (level > 13) difficulty = "Vận dụng cao";
-
-  let allPool = [...QUESTION_POOL[grade][difficulty]];
+  // Logic tăng độ khó: Khi Replay, các câu hỏi khó sẽ xuất hiện sớm hơn 2 bậc
+  const effectiveLevel = isReplay ? level + 2 : level;
   
-  // Logic "Lấy từ cuối đến đầu hoặc nửa cuối đến cuối" khi chơi lại
-  if (isReplay) {
-    // Đảo ngược pool hoặc chỉ lấy nửa sau để tạo cảm giác "mới mẻ" từ cuối chương
-    const midIndex = Math.floor(allPool.length / 2);
-    const secondHalf = allPool.slice(midIndex).reverse();
-    const firstHalf = allPool.slice(0, midIndex).reverse();
-    allPool = [...secondHalf, ...firstHalf];
+  let difficulty: keyof typeof QUESTION_POOL[Grade];
+  if (effectiveLevel > 13) difficulty = "Vận dụng cao";
+  else if (effectiveLevel > 10) difficulty = "Vận dụng";
+  else if (effectiveLevel > 5) difficulty = "Thông hiểu";
+  else difficulty = "Nhận biết";
+
+  let allPool = [...(QUESTION_POOL[grade][difficulty] || [])];
+  
+  // Nếu pool của độ khó này trống (do dữ liệu chưa cập nhật đủ), lùi lại độ khó thấp hơn
+  if (allPool.length === 0) {
+     allPool = [...(QUESTION_POOL[grade]["Nhận biết"] || [])];
   }
 
   const globalHistory = getGlobalHistory();
   
-  // 1. Lọc ra các câu hỏi CHƯA TỪNG dùng trong session này VÀ CHƯA TỪNG dùng trong lịch sử (ưu tiên)
+  // 1. Ưu tiên: Chưa dùng trong session NÀY và chưa dùng trong LỊCH SỬ toàn cục
   let availablePool = allPool.filter(q => !sessionUsed.has(q.question) && !globalHistory.has(q.question));
   
-  // 2. Nếu kho câu hỏi mới cạn kiệt, cho phép dùng lại từ lịch sử nhưng vẫn KHÔNG ĐƯỢC trùng trong session này
+  // 2. Dự phòng: Nếu hết câu mới hoàn toàn, cho phép dùng lại câu từ lịch sử nhưng KHÔNG ĐƯỢC trùng trong session này
   if (availablePool.length === 0) {
     availablePool = allPool.filter(q => !sessionUsed.has(q.question));
   }
   
-  // 3. Trường hợp xấu nhất: Lấy đại 1 câu trừ câu vừa mới làm
+  // 3. Cuối cùng: Nếu vẫn hết (trường hợp hiếm), lấy đại một câu bất kỳ trừ câu vừa mới làm xong
   if (availablePool.length === 0) {
-    const sessionArray = Array.from(sessionUsed);
-    const lastQuestion = sessionArray[sessionArray.length - 1];
-    availablePool = allPool.filter(q => q.question !== lastQuestion);
+    availablePool = allPool;
   }
 
-  // Nếu là Replay, chúng ta không chọn ngẫu nhiên hoàn toàn mà ưu tiên các phần tử đầu tiên của pool đã được xử lý (cuối chương)
-  // Nhưng vẫn giữ tính ngẫu nhiên nhẹ bằng cách chọn trong 3 câu đầu tiên khả dụng
-  const pickRange = isReplay ? Math.min(3, availablePool.length) : availablePool.length;
-  const randomIndex = Math.floor(Math.random() * pickRange);
-  const rawQuestion = availablePool[randomIndex];
+  // Luôn xáo trộn pool khả dụng trước khi chọn
+  const shuffledPool = shuffleArray(availablePool);
+  const rawQuestion = shuffledPool[0];
   
+  // Lưu vào bộ nhớ session và bộ nhớ toàn cục
   sessionUsed.add(rawQuestion.question);
   updateGlobalHistory(rawQuestion.question);
 
-  // XÁO TRỘN ĐÁP ÁN
+  // XÁO TRỘN ĐÁP ÁN để người chơi không học thuộc lòng vị trí A, B, C, D
   const originalOptions = Object.entries(rawQuestion.options);
   const correctValue = rawQuestion.options[rawQuestion.correctAnswer];
   const shuffledOptionsEntries = shuffleArray(originalOptions);

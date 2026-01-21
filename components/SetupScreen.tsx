@@ -43,7 +43,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
             <Trophy className="text-white" size={48} />
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-slate-800 uppercase tracking-tighter mb-2">
-            TOÁN HỌC <span className="text-blue-600">TRIỆU PHÚ</span>
+            ĐẤU TRƯỜNG <span className="text-blue-600">TOÁN HỌC</span>
           </h1>
           <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-8">
             HÀNH TRÌNH CHINH PHỤC ĐỈNH CAO 2026

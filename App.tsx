@@ -61,12 +61,13 @@ const App: React.FC = () => {
   const handleReset = (isReplay: boolean = false) => {
     if (!player) return;
     playTransitionSound();
+    // Giữ thông tin người chơi nhưng đặt lại điểm và bật cờ Replay
     setPlayer({ 
       ...player, 
       score: 0, 
       time: "", 
       startTime: Date.now(),
-      isReplay 
+      isReplay: isReplay // Kích hoạt chế độ khó hơn nếu được truyền true
     });
     setGameState('PLAYING');
   };
@@ -81,13 +82,13 @@ const App: React.FC = () => {
              </div>
              <div className="flex flex-col">
                <span className="font-black text-[10px] uppercase tracking-widest text-white leading-none">CLB Toán Mang Thít</span>
-               <span className="text-[8px] font-black text-blue-400 uppercase tracking-tighter mt-0.5">Ai là triệu phú Toán học</span>
+               <span className="text-[8px] font-black text-blue-400 uppercase tracking-tighter mt-0.5">Đấu trường trí tuệ Toán học</span>
              </div>
           </div>
           <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
             <Zap size={10} className="text-blue-400 fill-blue-400" />
             <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">
-              Hệ thống sinh đề theo chủ đề
+              Hệ thống sinh đề thông minh
             </span>
           </div>
         </div>
