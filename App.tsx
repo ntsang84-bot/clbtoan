@@ -61,15 +61,19 @@ const App: React.FC = () => {
   const handleReset = (isReplay: boolean = false) => {
     if (!player) return;
     playTransitionSound();
-    // Giữ thông tin người chơi nhưng đặt lại điểm và bật cờ Replay
     setPlayer({ 
       ...player, 
       score: 0, 
       time: "", 
       startTime: Date.now(),
-      isReplay: isReplay // Kích hoạt chế độ khó hơn nếu được truyền true
+      isReplay: isReplay 
     });
     setGameState('PLAYING');
+  };
+
+  const handleGoHome = () => {
+    playTransitionSound();
+    setGameState('START');
   };
 
   return (
@@ -102,7 +106,7 @@ const App: React.FC = () => {
           <GameScreen player={player} topic={currentTopic} timeLimit={timeLimit} onGameOver={handleGameOver} />
         )}
         {gameState === 'RESULT' && player && (
-          <ResultScreen player={player} onReset={handleReset} />
+          <ResultScreen player={player} onReset={handleReset} onGoHome={handleGoHome} />
         )}
         {gameState === 'LEADERBOARD' && (
           <LeaderboardScreen onBack={() => setGameState('START')} />

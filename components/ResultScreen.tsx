@@ -10,9 +10,10 @@ import { AUDIO_URLS } from '../constants';
 interface ResultScreenProps {
   player: Player;
   onReset: (isReplay?: boolean) => void;
+  onGoHome: () => void;
 }
 
-const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
+const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset, onGoHome }) => {
   const [report, setReport] = useState<{ name: string, lop: string, diem: number, thoi_gian: string, comment: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -102,7 +103,6 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
             <p className="text-blue-600 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.3em] opacity-80 italic">Chúc mừng nhà toán học trẻ xuất sắc</p>
           </div>
 
-          {/* Certificate Container - Có thể cuộn ngang trên Mobile */}
           <div className="w-full max-w-5xl no-print rounded-3xl md:rounded-[4rem] border border-slate-200 bg-white/50 backdrop-blur-md p-2 md:p-12 shadow-xl mb-6 overflow-x-auto overflow-y-visible custom-scrollbar">
             <div 
               ref={certificateRef}
@@ -112,7 +112,6 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
             >
               <div className="border-[20px] border-[#8b6d31] m-2 p-14 border-double rounded-sm flex flex-col items-center text-center relative bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] bg-[#fffdfa]">
                 
-                {/* Decorative Corners */}
                 <div className="absolute top-0 left-0 p-8"><div className="w-24 h-24 border-t-[8px] border-l-[8px] border-[#8b6d31]"></div></div>
                 <div className="absolute top-0 right-0 p-8"><div className="w-24 h-24 border-t-[8px] border-r-[8px] border-[#8b6d31]"></div></div>
                 <div className="absolute bottom-0 left-0 p-8"><div className="w-24 h-24 border-b-[8px] border-l-[8px] border-[#8b6d31]"></div></div>
@@ -170,7 +169,6 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
                   </p>
                 </div>
 
-                {/* Signatures & Seal 2026 */}
                 <div className="flex justify-between items-end w-full mt-auto pt-10 border-t border-slate-200">
                   <div className="text-left flex flex-col items-center">
                     <div className="w-44 h-44 border-4 border-[#b71c1c]/25 rounded-full flex items-center justify-center bg-white shadow-inner relative mb-3">
@@ -221,7 +219,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ player, onReset }) => {
                 <RefreshCcw size={16} /> Chơi lại
               </button>
               <button
-                onClick={() => { playClick(); window.location.reload(); }}
+                onClick={() => { playClick(); onGoHome(); }}
                 className="flex-1 flex items-center justify-center gap-3 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all uppercase text-[10px] tracking-widest shadow-lg"
               >
                 <Home size={16} /> Về trang chủ

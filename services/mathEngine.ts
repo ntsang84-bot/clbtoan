@@ -25,6 +25,13 @@ function updateGlobalHistory(question: string) {
 }
 
 /**
+ * Reset lịch sử câu hỏi (Dành cho Admin).
+ */
+export function clearGlobalQuestionHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+}
+
+/**
  * Xáo trộn mảng dùng thuật toán Fisher-Yates.
  */
 function shuffleArray<T>(array: T[]): T[] {

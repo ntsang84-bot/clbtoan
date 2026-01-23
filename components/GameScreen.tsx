@@ -29,6 +29,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
   const [hiddenOptions, setHiddenOptions] = useState<string[]>([]);
 
   const usedQuestionsRef = useRef<Set<string>>(new Set());
+  const thinkingAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const playAudio = (url: string, volume: number = 0.4) => {
     const audio = new Audio(url);
@@ -44,7 +45,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
       setTimeLeft(level <= 5 ? 60 : level <= 10 ? 120 : 180);
     }
     
-    // Cuộn lên đầu trang khi có câu hỏi mới
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     setTimeout(() => {
@@ -57,13 +57,27 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
         setLoading(false);
         setSelectedOption(null);
         setIsAnswered(false);
-        playAudio(AUDIO_URLS.whoosh, 0.5);
+        
+        playAudio(AUDIO_URLS.questionAppear, 0.5);
+        
+        if (thinkingAudioRef.current) {
+          thinkingAudioRef.current.pause();
+        }
+        thinkingAudioRef.current = new Audio(AUDIO_URLS.thinking);
+        thinkingAudioRef.current.volume = 0.15;
+        thinkingAudioRef.current.loop = true;
+        thinkingAudioRef.current.play().catch(() => {});
       }
     }, 800);
   }, [player.grade, player.isReplay]);
 
   useEffect(() => {
     getNewQuestion(currentLevel);
+    return () => {
+      if (thinkingAudioRef.current) {
+        thinkingAudioRef.current.pause();
+      }
+    };
   }, [currentLevel, getNewQuestion]);
 
   useEffect(() => {
@@ -81,6 +95,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
   const handleAnswer = (opt: string) => {
     if (isAnswered || loading) return;
     
+    if (thinkingAudioRef.current) {
+      thinkingAudioRef.current.pause();
+    }
+
     playAudio(AUDIO_URLS.click, 0.4);
     setSelectedOption(opt);
     setIsAnswered(true);
@@ -98,7 +116,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
       } else {
         if (opt !== 'TIMEOUT') playAudio(AUDIO_URLS.wrong, 0.5);
       }
-    }, 1000);
+    }, 800);
 
     setTimeout(() => {
       if (isCorrect) {
@@ -111,7 +129,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
         const finalPoints = MILESTONES.find(m => m.level === currentLevel - 1)?.points || 0;
         onGameOver(finalPoints);
       }
-    }, 3000);
+    }, 3200);
   };
 
   const useFiftyFifty = () => {
@@ -144,13 +162,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen p-3 md:p-8 millionaire-bg">
-      {/* Cột mốc điểm - Ẩn trên Mobile, hiện trên Desktop */}
-      <div className="hidden lg:flex w-64 flex-col gap-2 pr-6 sticky top-20 h-[80vh]">
+    <div className="flex flex-col lg:flex-row min-h-screen p-3 md:p-8 millionaire-bg overflow-y-auto scroll-smooth">
+      {/* Cột điểm số bên trái - Desktop */}
+      <div className="hidden lg:flex w-64 flex-col gap-2 pr-6 sticky top-20 h-fit">
         <div className="bg-white p-4 rounded-2xl border border-slate-200 mb-2 shadow-sm">
-           <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest text-center">Bậc thang điểm 2026</p>
+           <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest text-center">Tiến trình 2026</p>
         </div>
-        <div className="flex flex-col-reverse gap-1 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="flex flex-col-reverse gap-1 overflow-y-auto max-h-[70vh] pr-2 custom-scrollbar">
           {MILESTONES.map(m => (
             <div 
               key={m.level} 
@@ -169,76 +187,64 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center w-full max-w-5xl mx-auto">
-        {/* Header thông tin game - Đã tối ưu cho Mobile */}
-        <div className="w-full flex flex-col md:flex-row justify-between items-center mb-4 md:mb-8 bg-white p-4 md:p-6 rounded-3xl md:rounded-[2.5rem] border border-slate-200 shadow-sm gap-4">
+      <div className="flex-1 flex flex-col items-center w-full max-w-5xl mx-auto pb-10">
+        {/* Status Bar */}
+        <div className="w-full flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 md:p-6 rounded-[2rem] border border-slate-200 shadow-sm gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="p-2 bg-blue-50 rounded-xl text-blue-600 shrink-0">
-              <BookOpen size={20} className="md:hidden" />
-              <BookOpen size={28} className="hidden md:block" />
+              <BookOpen size={24} />
             </div>
-            <div>
-              <p className="text-slate-400 text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-0.5">Khối {player.grade} - Câu {currentLevel}</p>
-              <h2 className="text-sm md:text-xl font-extrabold text-slate-800 uppercase italic leading-none">Chinh phục đỉnh cao</h2>
+            <div className="overflow-hidden">
+              <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-0.5">Khối {player.grade} • Thí sinh {player.name}</p>
+              <h2 className="text-sm md:text-lg font-extrabold text-slate-800 uppercase italic">Câu hỏi số {currentLevel}</h2>
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-2 md:gap-4 bg-slate-50 p-2 rounded-2xl md:rounded-3xl border border-slate-100 w-full md:w-auto">
-             <button 
-                onClick={useFiftyFifty}
-                disabled={!lifelines.fiftyFifty || isAnswered}
-                className="lifeline-btn flex flex-col items-center justify-center w-10 h-10 md:w-14 md:h-14 bg-white border border-slate-200 rounded-xl md:rounded-2xl text-rose-500"
-             >
-                <XCircle size={16} className="md:size-20" />
-                <span className="text-[6px] md:text-[7px] font-black mt-1 uppercase">50:50</span>
+          <div className="flex items-center justify-center gap-3 md:gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-100 w-full md:w-auto">
+             <button onClick={useFiftyFifty} disabled={!lifelines.fiftyFifty || isAnswered} className="lifeline-btn flex flex-col items-center justify-center w-12 h-12 bg-white border border-slate-200 rounded-xl text-rose-500">
+                <XCircle size={18} />
+                <span className="text-[6px] font-black mt-1 uppercase">50:50</span>
              </button>
-             <button 
-                onClick={useChangeQuestion}
-                disabled={!lifelines.changeQuestion || isAnswered}
-                className="lifeline-btn flex flex-col items-center justify-center w-10 h-10 md:w-14 md:h-14 bg-white border border-slate-200 rounded-xl md:rounded-2xl text-blue-500"
-             >
-                <RefreshCw size={16} className="md:size-20" />
-                <span className="text-[6px] md:text-[7px] font-black mt-1 uppercase">Đổi câu</span>
+             <button onClick={useChangeQuestion} disabled={!lifelines.changeQuestion || isAnswered} className="lifeline-btn flex flex-col items-center justify-center w-12 h-12 bg-white border border-slate-200 rounded-xl text-blue-500">
+                <RefreshCw size={18} />
+                <span className="text-[6px] font-black mt-1 uppercase">Đổi câu</span>
              </button>
-             <button 
-                onClick={useRemoveOne}
-                disabled={!lifelines.removeOne || isAnswered}
-                className="lifeline-btn flex flex-col items-center justify-center w-10 h-10 md:w-14 md:h-14 bg-white border border-slate-200 rounded-xl md:rounded-2xl text-emerald-500"
-             >
-                <UserCheck size={16} className="md:size-20" />
-                <span className="text-[6px] md:text-[7px] font-black mt-1 uppercase">Bỏ 1</span>
+             <button onClick={useRemoveOne} disabled={!lifelines.removeOne || isAnswered} className="lifeline-btn flex flex-col items-center justify-center w-12 h-12 bg-white border border-slate-200 rounded-xl text-emerald-500">
+                <UserCheck size={18} />
+                <span className="text-[6px] font-black mt-1 uppercase">Bỏ 1</span>
              </button>
           </div>
 
-          <div className={`flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center px-4 md:px-6 py-2 rounded-2xl border w-full md:w-auto ${timeLeft <= 10 ? 'border-rose-300 bg-rose-50 animate-pulse' : 'border-slate-200 bg-slate-50'}`}>
-             <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest">Thời gian</p>
-             <p className={`text-xl md:text-3xl font-mono font-black ml-2 md:ml-0 ${timeLeft <= 10 ? 'text-rose-600' : 'text-slate-700'}`}>{timeLeft}s</p>
+          <div className={`flex flex-row md:flex-col items-center md:items-end justify-between px-5 py-2 rounded-2xl border w-full md:w-auto ${timeLeft <= 10 ? 'border-rose-300 bg-rose-50 animate-pulse' : 'border-slate-200 bg-slate-50'}`}>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest md:hidden">Thời gian</p>
+             <p className={`text-2xl font-mono font-black ${timeLeft <= 10 ? 'text-rose-600' : 'text-slate-700'}`}>{timeLeft}s</p>
           </div>
         </div>
 
         {loading ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-6 py-20 md:py-40">
-             <Loader2 className="w-12 h-12 md:w-16 md:h-16 text-blue-500 animate-spin" />
-             <p className="text-slate-400 font-black uppercase tracking-[0.4em] text-[10px] md:text-xs italic">Đang tải đề thi...</p>
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 py-20">
+             <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+             <p className="text-slate-400 font-black uppercase tracking-widest text-xs italic">Đang chuẩn bị câu hỏi...</p>
           </div>
         ) : (
-          <div className="w-full space-y-4 md:space-y-8 animate-in fade-in zoom-in duration-500 pb-10">
-            {/* Box Câu hỏi - Tối ưu chiều cao trên mobile */}
-            <div className="bg-white p-6 md:p-16 rounded-2xl md:rounded-[3.5rem] shadow-xl border-4 md:border-[10px] border-blue-50 flex flex-col items-center justify-center text-center min-h-[180px] md:min-h-[350px] relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-full h-1 md:h-3 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500"></div>
-               <div className="relative z-10 w-full">
+          <div className="w-full space-y-4 md:space-y-6 animate-in fade-in zoom-in duration-500">
+            
+            {/* VÙNG CÂU HỎI - CÓ THANH CUỘN NGANG CHO CÔNG THỨC DÀI */}
+            <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border-4 border-blue-50 relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500"></div>
+               <div className="scroll-container overflow-x-auto pb-4">
                   {question && (
                     <MathRenderer 
                       text={question.question} 
-                      className="text-xl md:text-5xl font-extrabold text-slate-900 leading-snug" 
+                      className="text-lg md:text-3xl font-extrabold text-slate-900 leading-snug min-w-full" 
                       isLarge 
                     />
                   )}
                </div>
             </div>
 
-            {/* Lưới đáp án */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
+            {/* VÙNG ĐÁP ÁN */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {question && Object.entries(question.options).map(([key, value]) => {
                 const isHidden = hiddenOptions.includes(key);
                 return (
@@ -247,37 +253,41 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
                     disabled={isAnswered || isHidden}
                     onClick={() => handleAnswer(key)}
                     className={`
-                      ans-btn p-4 md:p-7 text-left relative group border-2 transition-all duration-300
+                      ans-btn p-4 md:p-6 text-left relative group border-2 transition-all duration-300
                       ${isHidden ? 'opacity-0 pointer-events-none' : ''}
                       ${!isAnswered ? 'bg-white border-slate-200 hover:bg-blue-600 hover:border-blue-700 shadow-sm' : ''}
-                      ${isAnswered && key === question.correctAnswer ? 'bg-emerald-500 border-emerald-600 text-white shadow-lg scale-[1.02] md:scale-[1.04] z-10' : ''}
+                      ${isAnswered && key === question.correctAnswer ? 'bg-emerald-500 border-emerald-600 text-white shadow-lg scale-[1.01] z-10' : ''}
                       ${isAnswered && selectedOption === key && key !== question.correctAnswer ? 'bg-rose-500 border-rose-600 text-white' : ''}
                       ${isAnswered && key !== question.correctAnswer && key !== selectedOption ? 'opacity-20 grayscale' : ''}
                     `}
                   >
-                    <div className="flex items-center gap-3 md:gap-6">
-                      <span className={`shrink-0 w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center font-black text-sm md:text-xl shadow-inner ${
+                    <div className="flex items-center gap-4 scroll-container overflow-x-auto">
+                      <span className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shadow-inner ${
                         isAnswered && key === question.correctAnswer ? 'bg-white text-emerald-700' : 'bg-slate-100 text-blue-600'
                       } group-hover:bg-white group-hover:text-blue-700 transition-colors`}>{key}</span>
-                      <MathRenderer 
-                        text={value} 
-                        className={`text-sm md:text-2xl font-bold flex-1 ${!isAnswered ? 'text-slate-700 group-hover:text-white' : 'text-inherit'}`} 
-                      />
+                      <div className="flex-1">
+                        <MathRenderer 
+                          text={value} 
+                          className={`text-base md:text-xl font-bold ${!isAnswered ? 'text-slate-700 group-hover:text-white' : 'text-inherit'}`} 
+                        />
+                      </div>
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            {/* Giải thích khi trả lời xong */}
+            {/* VÙNG GIẢI THÍCH - CÓ THANH CUỘN DỌC NẾU QUÁ DÀI */}
             {isAnswered && (
-              <div className="p-6 md:p-10 bg-white rounded-2xl md:rounded-[3rem] border border-blue-100 shadow-md animate-in slide-in-from-top-4">
-                <div className="flex items-center gap-3 mb-3">
-                   <Info size={18} className="text-blue-600" />
+              <div className="p-6 md:p-8 bg-white rounded-[2.5rem] border border-blue-100 shadow-md animate-in slide-in-from-top-4">
+                <div className="flex items-center gap-3 mb-4">
+                   <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+                     <Info size={20} />
+                   </div>
                    <h4 className="text-blue-600 font-black uppercase text-[10px] tracking-widest italic">Phân tích học thuật:</h4>
                 </div>
-                <div className="text-slate-600 text-sm md:text-xl leading-relaxed font-medium italic border-l-4 border-blue-200 pl-4 md:pl-6">
-                   <MathRenderer text={question?.explanation || ""} />
+                <div className="text-slate-600 text-base md:text-lg leading-relaxed font-medium italic border-l-4 border-blue-200 pl-4 overflow-x-auto scroll-container max-h-[300px] overflow-y-auto">
+                   <MathRenderer text={question?.explanation || "Vui lòng chờ giây lát..."} />
                 </div>
               </div>
             )}

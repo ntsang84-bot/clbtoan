@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
 import { Grade, Player } from '../types';
-import { Trophy, User, ArrowRight, Star, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Trophy, User, ArrowRight, Star, ShieldCheck, AlertCircle, Settings, RotateCcw } from 'lucide-react';
 import { AUDIO_URLS } from '../constants';
 import { getPlayerAttemptCount } from '../services/sheetsService';
+import { clearGlobalQuestionHistory } from '../services/mathEngine';
 
 interface SetupScreenProps {
   onStart: (player: Player, topic: string, timeLimit: number) => void;
@@ -12,18 +13,35 @@ interface SetupScreenProps {
 
 const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard }) => {
   const [name, setName] = useState('');
-  const [grade, setGrade] = useState<Grade>(11);
+  const [grade, setGrade] = useState<Grade>(gradeFromStorage() || 11);
   const [classRoom, setClassRoom] = useState('');
   const [isChecking, setIsChecking] = useState(false);
+
+  function gradeFromStorage(): Grade | null {
+    const saved = localStorage.getItem('MATH_PREF_GRADE');
+    return saved ? parseInt(saved) as Grade : null;
+  }
 
   const playClick = () => {
     new Audio(AUDIO_URLS.click).play().catch(() => {});
   };
 
+  const handleAdminReset = () => {
+    // Luôn sử dụng window.prompt để nhập mật khẩu
+    const password = window.prompt("QUẢN TRỊ VIÊN\nNhập mật khẩu (MT14) để đặt lại ngân hàng câu hỏi:");
+    
+    if (password === "MT14") {
+      clearGlobalQuestionHistory();
+      alert("XÁC NHẬN: Ngân hàng câu hỏi đã được làm mới thành công!");
+    } else if (password !== null) {
+      alert("LỖI: Mật khẩu không chính xác.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !classRoom.trim()) {
-      alert("Vui lòng nhập đầy đủ thông tin!");
+      alert("Vui lòng điền đầy đủ thông tin để tham gia.");
       return;
     }
 
@@ -31,11 +49,12 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
     const attempts = await getPlayerAttemptCount(name, classRoom);
     
     if (attempts >= 3) {
-      alert(`Thí sinh ${name} - Lớp ${classRoom} đã hết lượt tham gia (Tối đa 3 lần). Hẹn gặp lại bạn ở mùa giải sau!`);
+      alert(`Thí sinh ${name} - Lớp ${classRoom} đã dùng hết 3 lượt tham gia.`);
       setIsChecking(false);
       return;
     }
 
+    localStorage.setItem('MATH_PREF_GRADE', grade.toString());
     playClick();
     onStart({ 
       name: name.trim(), 
@@ -47,8 +66,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-6 millionaire-bg">
-      <div className="w-full max-w-2xl bg-white/80 backdrop-blur-xl p-8 md:p-14 rounded-[3.5rem] border border-white shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
+    <div className="flex flex-col items-center justify-start min-h-screen millionaire-bg relative overflow-y-auto pb-24">
+      <div className="w-full max-w-2xl bg-white/90 backdrop-blur-xl p-8 md:p-14 rounded-[3rem] border border-white shadow-2xl my-10 mx-4">
         
         <div className="text-center mb-10">
           <div className="inline-flex p-5 bg-blue-600 rounded-3xl mb-6 shadow-xl shadow-blue-200">
@@ -57,12 +76,12 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
           <h1 className="text-4xl md:text-5xl font-black text-slate-800 uppercase tracking-tighter mb-2">
             ĐẤU TRƯỜNG <span className="text-blue-600">TOÁN HỌC</span>
           </h1>
-          <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-8">
-            HÀNH TRÌNH CHINH PHỤC ĐỈNH CAO 2026
+          <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-8 italic">
+            CHINH PHỤC ĐỈNH CAO TRI THỨC 2026
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 animate-in slide-in-from-bottom-10 duration-700">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-2">Họ tên thí sinh</label>
@@ -70,9 +89,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   required
-                  disabled={isChecking}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-5 py-4 text-slate-800 focus:border-blue-500 focus:bg-white outline-none font-bold transition-all disabled:opacity-50"
-                  placeholder="Nhập tên của bạn..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-5 py-4 text-slate-800 focus:border-blue-500 focus:bg-white outline-none font-bold transition-all"
+                  placeholder="Nhập tên..."
                   value={name}
                   onChange={e => setName(e.target.value)}
                 />
@@ -83,8 +101,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
               <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-2">Khối & Lớp</label>
               <div className="flex gap-2">
                 <select 
-                  disabled={isChecking}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 outline-none font-bold appearance-none cursor-pointer focus:border-blue-500 focus:bg-white disabled:opacity-50"
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 outline-none font-bold cursor-pointer focus:border-blue-500"
                   value={grade}
                   onChange={e => setGrade(parseInt(e.target.value) as Grade)}
                 >
@@ -94,8 +111,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
                 </select>
                 <input 
                   required
-                  disabled={isChecking}
-                  className="w-24 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 focus:border-blue-500 focus:bg-white outline-none font-bold text-center uppercase disabled:opacity-50"
+                  className="w-24 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 focus:border-blue-500 outline-none font-bold text-center uppercase"
                   placeholder="Lớp"
                   value={classRoom}
                   onChange={e => setClassRoom(e.target.value)}
@@ -107,7 +123,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
           <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex items-start gap-3">
              <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={16} />
              <p className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-tight">
-               Lưu ý: Mỗi thí sinh chỉ được tham gia tối đa 3 lần. Kết quả tốt nhất sẽ được lưu lại.
+               Lưu ý quan trọng: Mỗi bạn có 3 lượt chơi. Kết quả cao nhất sẽ được công nhận.
              </p>
           </div>
 
@@ -115,9 +131,9 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
             <button 
               type="submit"
               disabled={isChecking}
-              className="w-full py-6 bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] active:scale-95 text-white font-black text-xl rounded-3xl transition-all shadow-xl shadow-blue-200 flex items-center justify-center gap-4 uppercase tracking-tighter disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-6 bg-blue-600 hover:bg-blue-700 text-white font-black text-xl rounded-3xl transition-all shadow-xl shadow-blue-200 flex items-center justify-center gap-4 uppercase tracking-tighter disabled:opacity-50"
             >
-              {isChecking ? "Đang xác thực..." : "Bắt đầu hành trình"}
+              {isChecking ? "Đang xử lý..." : "Bắt đầu chinh phục"}
               {!isChecking && <ArrowRight size={24} />}
             </button>
             <button 
@@ -125,13 +141,24 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onViewLeaderboard })
               onClick={() => { playClick(); onViewLeaderboard(); }}
               className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]"
             >
-              <Star size={14} className="text-yellow-500 fill-yellow-500" /> Bảng vinh danh
+              <Star size={14} className="text-yellow-500 fill-yellow-500" /> Bảng Vinh Danh
             </button>
           </div>
 
-          <div className="flex items-center justify-center gap-2 pt-2 opacity-50">
-             <ShieldCheck size={12} className="text-emerald-500" />
-             <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Hệ thống thi chuẩn hóa CLB Mang Thít 2026</span>
+          <div className="pt-10 flex flex-col items-center gap-4">
+             <div className="flex items-center gap-2 opacity-50">
+               <ShieldCheck size={12} className="text-emerald-500" />
+               <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Hệ thống chuẩn hóa 2026</span>
+             </div>
+             
+             {/* Nút Quản trị để reset ngân hàng */}
+             <button 
+               type="button"
+               onClick={handleAdminReset}
+               className="px-6 py-2.5 bg-slate-800 hover:bg-black text-white rounded-full transition-all text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg border border-slate-700"
+             >
+               <Settings size={14} /> Quản trị (Reset Đề)
+             </button>
           </div>
         </form>
       </div>

@@ -10,15 +10,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <style>
         html, body {
-            height: auto;
-            min-height: 100%;
+            height: 100%;
             font-family: 'Montserrat', sans-serif;
             background-color: #f8fafc;
             color: #1e293b;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            overflow-y: auto !important;
+            overflow-y: auto;
             -webkit-font-smoothing: antialiased;
             scroll-behavior: smooth;
         }
@@ -31,8 +30,6 @@
             background: linear-gradient(135deg, #f0f9ff 0%, #e2e8f0 100%);
             flex: 1;
             width: 100%;
-            display: flex;
-            flex-direction: column;
         }
         .ans-btn {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -41,7 +38,7 @@
         }
         @media (max-width: 640px) {
             .ans-btn {
-                clip-path: none; /* Bỏ clip-path trên mobile để dễ đọc và click hơn */
+                clip-path: none; 
                 border-radius: 1rem;
                 padding: 1rem !important;
             }
@@ -59,16 +56,43 @@
             opacity: 0.2;
             cursor: not-allowed;
         }
-        /* Custom scrollbar cho các danh sách dài */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
+
+        /* Tối ưu thanh trượt ngang dọc */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.05);
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(37, 99, 235, 0.2);
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
             border-radius: 10px;
+            border: 2px solid #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Đảm bảo KaTeX không làm vỡ giao diện */
+        .katex-display {
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 10px 0;
+            margin: 0;
+        }
+        .katex {
+            white-space: nowrap;
+        }
+        
+        /* Custom scrollbar cho các vùng nội dung */
+        .scroll-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        .scroll-container::-webkit-scrollbar {
+            height: 4px;
         }
     </style>
 <script type="importmap">
