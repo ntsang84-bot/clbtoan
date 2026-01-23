@@ -37,6 +37,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
     audio.play().catch(() => {});
   };
 
+  const playHoverSound = () => {
+    if (isAnswered) return;
+    playAudio(AUDIO_URLS.hover, 0.1);
+  };
+
   const getNewQuestion = useCallback((level: number, isChange: boolean = false) => {
     setLoading(true);
     setHiddenOptions([]);
@@ -134,7 +139,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
 
   const useFiftyFifty = () => {
     if (!lifelines.fiftyFifty || !question) return;
-    playAudio(AUDIO_URLS.click);
+    playAudio(AUDIO_URLS.lifeline, 0.6);
     const options: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
     const wrongOptions = options.filter(opt => opt !== question.correctAnswer);
     const toHide = wrongOptions.sort(() => 0.5 - Math.random()).slice(0, 2);
@@ -144,14 +149,14 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
 
   const useChangeQuestion = () => {
     if (!lifelines.changeQuestion) return;
-    playAudio(AUDIO_URLS.click);
+    playAudio(AUDIO_URLS.lifeline, 0.6);
     setLifelines(prev => ({ ...prev, changeQuestion: false }));
     getNewQuestion(currentLevel, true);
   };
 
   const useRemoveOne = () => {
     if (!lifelines.removeOne || !question) return;
-    playAudio(AUDIO_URLS.click);
+    playAudio(AUDIO_URLS.lifeline, 0.6);
     const options: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
     const availableWrong = options.filter(opt => opt !== question.correctAnswer && !hiddenOptions.includes(opt));
     if (availableWrong.length > 0) {
@@ -250,6 +255,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ player, onGameOver }) => {
                 return (
                   <button
                     key={key}
+                    onMouseEnter={playHoverSound}
                     disabled={isAnswered || isHidden}
                     onClick={() => handleAnswer(key)}
                     className={`

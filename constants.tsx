@@ -27,7 +27,10 @@ export const AUDIO_URLS = {
   whoosh: 'https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3',
   celebration: 'https://www.myinstants.com/media/sounds/ai-la-trieu-phu-vuot-moc.mp3',
   thinking: 'https://www.myinstants.com/media/sounds/ai-la-trieu-phu-nhac-hoi-hop.mp3',
-  questionAppear: 'https://www.myinstants.com/media/sounds/ai-la-trieu-phu-mo-dau-cau-hoi.mp3'
+  questionAppear: 'https://www.myinstants.com/media/sounds/ai-la-trieu-phu-mo-dau-cau-hoi.mp3',
+  lifeline: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+  hover: 'https://assets.mixkit.co/active_storage/sfx/2562/2562-preview.mp3',
+  success: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'
 };
 
 export const QUESTION_POOL: Record<Grade, Record<string, MathQuestion[]>> = {

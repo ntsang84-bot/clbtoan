@@ -26,8 +26,8 @@ const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBack }) => {
   };
 
   const clearLeaderboard = () => {
+    playClick();
     if (confirm("Bạn có chắc chắn muốn xoá toàn bộ bảng xếp hạng hiện tại không?")) {
-      // Fix: Use the correct LOCAL_STORAGE_KEY defined in sheetsService.ts
       localStorage.removeItem('MATH_MILLIONAIRE_LEADERBOARD_LOCAL');
       setData([]);
     }
